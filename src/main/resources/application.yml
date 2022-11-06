@@ -1,0 +1,16 @@
+spring:
+  profiles:
+    active: local
+  datasource:
+    driver-class-name: "com.yugabyte.Driver"
+    username: yugabyte
+    password: yugabyte
+    url: "jdbc:yugabytedb://localhost:5433/yugabyte?load-balance=true"
+    hikari:
+      auto-commit: false
+      minimum-idle: 5
+      maximum-pool-size: 20
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
