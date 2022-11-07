@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
 
@@ -26,7 +25,6 @@ public class Item implements Serializable {
     @Column
     private double price;
     @ManyToMany
-    @Size(min = 1, max = 1)
     @JoinTable(name = "item_product", joinColumns = {@JoinColumn(name = "item_id", nullable = false),
             @JoinColumn(name = "order_id", nullable = false)},
             inverseJoinColumns = {@JoinColumn(name = "name", nullable = false)},

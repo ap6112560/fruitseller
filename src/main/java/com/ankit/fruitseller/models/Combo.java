@@ -16,15 +16,15 @@ import java.util.UUID;
 @Entity
 public class Combo implements Serializable {
     private static final long serialVersionUID = 1L;
+
     @Id
     @GenericGenerator(name = "CustomUUIDGenerator", strategy = "com.ankit.fruitseller.models.generator" +
             ".CustomUUIDGenerator")
     @GeneratedValue(generator = "CustomUUIDGenerator")
     @Column(name = "combo_id")
     private UUID comboId;
-
+    @Column
     private String name;
-
     @ManyToMany
     @JoinTable(name = "combo_product", joinColumns = {@JoinColumn(name = "combo_id", nullable = false)},
             inverseJoinColumns = {@JoinColumn(name = "name", nullable = false)},
