@@ -24,13 +24,13 @@ public class Item implements Serializable {
     private int quantity;
     @Column
     private double price;
-    @ManyToMany
-    @JoinTable(name = "item_product", joinColumns = {@JoinColumn(name = "item_id", nullable = false),
+    @ElementCollection
+    @CollectionTable(name = "item_product", joinColumns = {@JoinColumn(name = "item_id", nullable = false),
             @JoinColumn(name = "order_id", nullable = false)},
-            inverseJoinColumns = {@JoinColumn(name = "name", nullable = false)},
             indexes = {@Index(name = "item_product_order_id_item_id_index", columnList = "order_id, item_id")}
     )
-    private List<Product> products;
+    @Column(name = "name")
+    private List<String> products;
     @MapsId("orderId")
     @JsonIgnore
     @ManyToOne

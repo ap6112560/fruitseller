@@ -24,8 +24,5 @@ public class Product implements Serializable {
     private int availableItemCount;
     @JsonIgnore
     @ManyToMany(mappedBy = "products", cascade = CascadeType.ALL)
-    private List<Item> items;
-    @JsonIgnore
-    @ManyToMany(mappedBy = "products", cascade = CascadeType.ALL)
     private List<Combo> combos;
 }
