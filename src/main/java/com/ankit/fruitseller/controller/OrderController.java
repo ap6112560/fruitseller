@@ -1,6 +1,7 @@
 package com.ankit.fruitseller.controller;
 
 import com.ankit.fruitseller.models.Order;
+import com.ankit.fruitseller.models.projections.OrderView;
 import com.ankit.fruitseller.service.OrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,7 +35,7 @@ public class OrderController {
     }
 
     @GetMapping(value = "/order", produces = "application/json")
-    ResponseEntity<List<Order>> get(@RequestParam(value = "filter.orderId", required = false) UUID orderId,
+    ResponseEntity<List<OrderView>> get(@RequestParam(value = "filter.orderId", required = false) UUID orderId,
                                     @RequestParam(value = "filter.shipment.method", required = false) String shipMethod,
                                     @RequestParam(value = "filter.order.status", required = false) String orderStatus) {
         return new ResponseEntity<>(service.get(orderId, shipMethod, orderStatus), HttpStatus.OK);

@@ -1,9 +1,11 @@
 package com.ankit.fruitseller.service;
 
+import com.ankit.fruitseller.mappers.OrderMapper;
 import com.ankit.fruitseller.models.Item;
 import com.ankit.fruitseller.models.Order;
 import com.ankit.fruitseller.models.Payment;
 import com.ankit.fruitseller.models.Shipment;
+import com.ankit.fruitseller.models.projections.OrderView;
 import com.ankit.fruitseller.repository.OrderFilterRepository;
 import com.ankit.fruitseller.repository.OrderRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -65,8 +67,8 @@ public class OrderService {
         return repository.findById(orderId).get();
     }
 
-    public List<Order> get(UUID orderId, String shipMethod, String orderStatus) {
+    public List<OrderView> get(UUID orderId, String shipMethod, String orderStatus) {
         List<UUID> ids = orderFilterRepository.getOrderIdsByFilters(orderId, shipMethod, orderStatus);
-        return repository.findByOrderIdIn(ids);
+        return OrderMapper.INSTANCE.map(repository.findByOrderIdIn(ids));
     }
 }
