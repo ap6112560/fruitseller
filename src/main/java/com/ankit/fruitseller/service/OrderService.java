@@ -67,6 +67,6 @@ public class OrderService {
 
     public List<Order> get(UUID orderId, String shipMethod, String orderStatus) {
         List<UUID> ids = orderFilterRepository.getOrderIdsByFilters(orderId, shipMethod, orderStatus);
-        return repository.findAllById(ids);
+        return repository.findByOrderIdIn(ids);
     }
 }
