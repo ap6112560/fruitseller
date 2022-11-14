@@ -14,7 +14,7 @@ public class OrderFilterRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public List<UUID> getOrderIdsByFilters(UUID orderId, String shipMethod, String orderStatus) {
+    public List<UUID> getOrderIdsByFilters(UUID orderId, String shipMethod, String orderStatus, int pageSize, int pageNo) {
         ArrayList<String> whereClauses = new ArrayList<>();
         Map<String, Object> parameterMap = new HashMap<>();
         String query = "select o.order_id from orders o ";
@@ -38,6 +38,10 @@ public class OrderFilterRepository {
         if (!whereClauses.isEmpty()) {
             query = query.concat("where ") + String.join(" and ", whereClauses);
         }
+
+        query = query.concat(" order by o.order_date asc limit :limit offset :offset");
+        parameterMap.put("limit", pageSize);
+        parameterMap.put("offset", (pageNo - 1) * pageSize);
 
         Query nativeQuery = entityManager.createNativeQuery(query);
         parameterMap.forEach(nativeQuery::setParameter);

@@ -36,8 +36,10 @@ public class OrderController {
 
     @GetMapping(value = "/order", produces = "application/json")
     ResponseEntity<List<OrderView>> get(@RequestParam(value = "filter.orderId", required = false) UUID orderId,
-                                    @RequestParam(value = "filter.shipment.method", required = false) String shipMethod,
-                                    @RequestParam(value = "filter.order.status", required = false) String orderStatus) {
-        return new ResponseEntity<>(service.get(orderId, shipMethod, orderStatus), HttpStatus.OK);
+                                        @RequestParam(value = "filter.shipment.method", required = false) String shipMethod,
+                                        @RequestParam(value = "filter.order.status", required = false) String orderStatus,
+                                        @RequestParam(value = "filter.page.size", required = false, defaultValue = "20") Integer pageSize,
+                                        @RequestParam(value = "filter.page.number") Integer pageNo) {
+        return new ResponseEntity<>(service.get(orderId, shipMethod, orderStatus, pageSize, pageNo), HttpStatus.OK);
     }
 }

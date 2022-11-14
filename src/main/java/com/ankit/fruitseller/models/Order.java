@@ -16,7 +16,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity(name = "orders")
-@Table(indexes = @Index(name = "order_status_index", columnList = "status"))
+@Table(indexes = @Index(name = "order_status_date_index", columnList = "status, order_date"))
 public class Order implements Serializable {
     private static final long serialVersionUID = 1L;
 

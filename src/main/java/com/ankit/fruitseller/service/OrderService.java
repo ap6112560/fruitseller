@@ -67,8 +67,8 @@ public class OrderService {
         return repository.findById(orderId).get();
     }
 
-    public List<OrderView> get(UUID orderId, String shipMethod, String orderStatus) {
-        List<UUID> ids = orderFilterRepository.getOrderIdsByFilters(orderId, shipMethod, orderStatus);
+    public List<OrderView> get(UUID orderId, String shipMethod, String orderStatus, int pageSize, int pageNo) {
+        List<UUID> ids = orderFilterRepository.getOrderIdsByFilters(orderId, shipMethod, orderStatus, pageSize, pageNo);
         return OrderMapper.INSTANCE.map(repository.findByOrderIdIn(ids));
     }
 }
