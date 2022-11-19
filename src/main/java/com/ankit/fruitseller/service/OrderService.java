@@ -10,8 +10,13 @@ import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,8 +27,16 @@ public class OrderService {
     private OrderRepository repository;
     @Autowired
     private CacheRepository cacheRepository;
+    private PlatformTransactionManager transactionManager;
     private ObjectMapper mapper = new ObjectMapper();
+    private TransactionTemplate transactionTemplate;
 
+    OrderService(PlatformTransactionManager transactionManager) {
+        transactionTemplate = new TransactionTemplate(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    }
+
+    @Transactional
     public Order save(Order order) {
         UUID orderId = order.getOrderId();
         List<Item> items = order.getItems();
@@ -52,17 +65,20 @@ public class OrderService {
         }
 
         Order savedOrder = repository.save(order);
-        if (orderId != null) {
-            if (cacheRepository.existsById(orderId)) {
-                cacheRepository.deleteById(orderId);
-            }
-        }
 
-        cacheRepository.save(mapToCachedEntity(savedOrder));
+        performCaching(() -> {
+            if (orderId != null) {
+                if (cacheRepository.existsById(orderId)) {
+                    cacheRepository.deleteById(orderId);
+                }
+            }
+            cacheRepository.save(mapToCachedEntity(savedOrder));
+        });
         return savedOrder;
     }
 
     @SneakyThrows
+    @Transactional
     public Order patch(UUID orderId, JsonNode orderPatch) {
         Order orderFromDB;
         Optional<CachedEntity> cachedOrder = cacheRepository.findById(orderId);
@@ -77,6 +93,7 @@ public class OrderService {
         return save(orderToSave);
     }
 
+    @Transactional
     public Order get(UUID orderId) {
         Order order;
         Optional<CachedEntity> cachedOrder = cacheRepository.findById(orderId);
@@ -84,10 +101,12 @@ public class OrderService {
             return mapToOrder(cachedOrder.get());
         }
         order = repository.findById(orderId).get();
-        cacheRepository.save(mapToCachedEntity(order));
+        CachedEntity cachedEntity = mapToCachedEntity(order);
+        performCaching(() -> cacheRepository.save(cachedEntity));
         return order;
     }
 
+    @Transactional
     public List<Order> get(UUID orderId, String shipMethod, String orderStatus, int pageSize, int pageNo) {
         List<Order> orders = new ArrayList<>(), unCachedOrders = new ArrayList<>(), cachedOrders = new ArrayList<>();
 
@@ -101,7 +120,7 @@ public class OrderService {
         if (!ids.isEmpty()) {
             unCachedOrders = repository.findByOrderIdIn(ids);
             List<CachedEntity> entities = unCachedOrders.stream().map(this::mapToCachedEntity).collect(Collectors.toList());
-            cacheRepository.saveAll(entities);
+            performCaching(() -> cacheRepository.saveAll(entities));
         }
         orders.addAll(cachedOrders);
         orders.addAll(unCachedOrders);
@@ -119,5 +138,11 @@ public class OrderService {
         cachedEntity.setId(order.getOrderId());
         cachedEntity.setValue(mapper.writeValueAsBytes(order));
         return cachedEntity;
+    }
+
+    private CompletableFuture<Void> performCaching(Runnable runnable) {
+        return CompletableFuture.runAsync(() ->
+                transactionTemplate.executeWithoutResult(status -> runnable.run())
+        );
     }
 }
