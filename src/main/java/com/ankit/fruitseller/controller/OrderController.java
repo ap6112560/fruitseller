@@ -1,11 +1,8 @@
 package com.ankit.fruitseller.controller;
 
 import com.ankit.fruitseller.models.Order;
-import com.ankit.fruitseller.models.projections.OrderView;
 import com.ankit.fruitseller.service.OrderService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.fge.jsonpatch.JsonPatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +22,7 @@ public class OrderController {
     }
 
     @PatchMapping(value = "/order/{orderId}", consumes = "application/json", produces = "application/json")
-    ResponseEntity<Order> patch(@PathVariable UUID orderId, @RequestBody JsonNode orderPatch) throws JsonPatchException, JsonProcessingException {
+    ResponseEntity<Order> patch(@PathVariable UUID orderId, @RequestBody JsonNode orderPatch) {
         return new ResponseEntity<>(service.patch(orderId, orderPatch), HttpStatus.OK);
     }
 
@@ -35,11 +32,11 @@ public class OrderController {
     }
 
     @GetMapping(value = "/order", produces = "application/json")
-    ResponseEntity<List<OrderView>> get(@RequestParam(value = "filter.orderId", required = false) UUID orderId,
-                                        @RequestParam(value = "filter.shipment.method", required = false) String shipMethod,
-                                        @RequestParam(value = "filter.order.status", required = false) String orderStatus,
-                                        @RequestParam(value = "filter.page.size", required = false, defaultValue = "20") Integer pageSize,
-                                        @RequestParam(value = "filter.page.number") Integer pageNo) {
+    ResponseEntity<List<Order>> get(@RequestParam(value = "filter.orderId", required = false) UUID orderId,
+                                    @RequestParam(value = "filter.shipment.method", required = false) String shipMethod,
+                                    @RequestParam(value = "filter.order.status", required = false) String orderStatus,
+                                    @RequestParam(value = "filter.page.size", required = false, defaultValue = "20") Integer pageSize,
+                                    @RequestParam(value = "filter.page.number") Integer pageNo) {
         return new ResponseEntity<>(service.get(orderId, shipMethod, orderStatus, pageSize, pageNo), HttpStatus.OK);
     }
 }

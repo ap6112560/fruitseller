@@ -14,7 +14,7 @@ public class OrderFilterRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public List<UUID> getOrderIdsByFilters(UUID orderId, String shipMethod, String orderStatus, int pageSize, int pageNo) {
+    public Set<UUID> getOrderIdsByFilters(UUID orderId, String shipMethod, String orderStatus, int pageSize, int pageNo) {
         ArrayList<String> whereClauses = new ArrayList<>();
         Map<String, Object> parameterMap = new HashMap<>();
         String query = "select o.order_id from orders o ";
@@ -47,6 +47,6 @@ public class OrderFilterRepository {
         parameterMap.forEach(nativeQuery::setParameter);
         nativeQuery.unwrap(NativeQuery.class).addScalar("order_id", PostgresUUIDType.INSTANCE);
 
-        return (List<UUID>) nativeQuery.getResultList();
+        return new HashSet<UUID>(nativeQuery.getResultList());
     }
 }
