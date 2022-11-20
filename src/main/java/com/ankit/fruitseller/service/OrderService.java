@@ -1,19 +1,24 @@
 package com.ankit.fruitseller.service;
 
+import com.ankit.fruitseller.enums.OrderStatus;
 import com.ankit.fruitseller.mappers.OrderMapper;
 import com.ankit.fruitseller.models.Item;
 import com.ankit.fruitseller.models.Order;
 import com.ankit.fruitseller.models.Payment;
 import com.ankit.fruitseller.models.Shipment;
 import com.ankit.fruitseller.models.projections.OrderView;
-import com.ankit.fruitseller.repository.OrderFilterRepository;
 import com.ankit.fruitseller.repository.OrderRepository;
+import com.ankit.fruitseller.specifications.OrderSpecification;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,8 +26,6 @@ import java.util.UUID;
 
 @Service
 public class OrderService {
-    @Autowired
-    OrderFilterRepository orderFilterRepository;
     @Autowired
     private OrderRepository repository;
 
@@ -67,8 +70,20 @@ public class OrderService {
         return repository.findById(orderId).get();
     }
 
-    public List<OrderView> get(UUID orderId, String shipMethod, String orderStatus, int pageSize, int pageNo) {
-        List<UUID> ids = orderFilterRepository.getOrderIdsByFilters(orderId, shipMethod, orderStatus, pageSize, pageNo);
-        return OrderMapper.INSTANCE.map(repository.findByOrderIdIn(ids));
+    public List<OrderView> get(UUID orderId, String shipMethod, OrderStatus orderStatus, int pageSize, int pageNo) {
+        Specification<Order> specification = OrderSpecification.getOrdersSpec();
+
+        if (orderId != null) {
+            specification = specification.and(OrderSpecification.getOrdersByOrderIdSpec(orderId));
+        }
+        if (orderStatus != null) {
+            specification = specification.and(OrderSpecification.getOrdersByStatusSpec(orderStatus));
+        }
+        if (shipMethod != null) {
+            specification = specification.and(OrderSpecification.getOrdersByShipmentMethodSpec(shipMethod));
+        }
+        Pageable page = PageRequest.of(pageNo - 1, pageSize, Sort.by(Sort.Direction.ASC, "orderDate"));
+        List<Order> orders = repository.findAll(specification, page).getContent();
+        return OrderMapper.INSTANCE.map(orders);
     }
 }
