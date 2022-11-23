@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  database:
+    image: "yugabytedb/yugabyte:2.4.4.0-b7"
+    command: "/home/yugabyte/bin/yugabyted start --daemon=false"
+    environment:
+      SERVICE_5433_NAME: ysql
+    ports:
+      - 5433:5433
+      - 7000:7000
+    volumes:
+      - ./database-data:/home/yugabyte/var
