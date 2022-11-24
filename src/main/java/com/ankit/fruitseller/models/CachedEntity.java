@@ -12,7 +12,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity(name = "cache")
-@Table(indexes = @Index(name = "id_index", columnList = "id"))
 public class CachedEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
